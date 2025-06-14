@@ -21,7 +21,8 @@ class Client(commands.Bot):
     async def on_message(self, message):
         if message.author == self.user:
             return
-        await message.channel.send(f'Hello {message.author.mention}, I am Cortana, your personal assistant. you said {message.content}')
+        await message.channel.send(f'Hello {message.author.mention}, I am Cortana, your personal assistant\
+                                   . you said {message.content} with the attached file {message.attachments}')
 
 intents = discord.Intents.default()
 intents.message_content = True
