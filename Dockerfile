@@ -8,10 +8,16 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Install system dependencies
+# Install system dependencies including FFmpeg
 RUN apt-get update && apt-get install -y \
     gcc \
+    ffmpeg \
+    libffi-dev \
+    libssl-dev \
     && rm -rf /var/lib/apt/lists/*
+
+# Verify FFmpeg installation
+RUN ffmpeg -version
 
 # Copy requirements file
 COPY requirements.txt .
@@ -29,12 +35,12 @@ RUN useradd --create-home --shell /bin/bash app && \
     chown -R app:app /app
 USER app
 
-# Expose port (not strictly necessary for Discord bots, but good practice)
-EXPOSE 8080
+# Expose port for Hugging Face spaces (typically 7860)
+EXPOSE 7860
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import sys; sys.exit(0)"
+# Health check - disabled for Discord bot as it doesn't expose HTTP endpoints
+# HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+#     CMD python -c "import sys; sys.exit(0)"
 
 # Command to run the application
 CMD ["python", "discord_bot.py"] 
