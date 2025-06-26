@@ -136,28 +136,31 @@ class Client(commands.Bot):
             # Handle attachments if present
             is_voice_message = False
             if message.attachments:
-                attachment = message.attachments[0]  # Handle first attachment
-                
-                # Download the attachment
+                # Process all attachments
                 async with aiohttp.ClientSession() as session:
-                    async with session.get(attachment.url) as resp:
-                        if resp.status == 200:
-                            file_data = await resp.read()
-                            
-                            # Determine file type based on content type or filename
-                            content_type = attachment.content_type or 'application/octet-stream'
-                            filename = attachment.filename.lower()
-                            
-                            if content_type.startswith('image/') or filename.endswith(('.jpg', '.jpeg', '.png', '.gif', '.webp')):
-                                files_payload["image"] = (attachment.filename, file_data, content_type)
-                            elif (filename.endswith(('.ogg', '.mp3', '.wav', '.m4a', '.aac', '.flac')) or 
-                                  content_type.startswith('audio/')):
-                                files_payload["voice"] = (attachment.filename, file_data, content_type)
-                                is_voice_message = True
-                                # For voice messages, request audio response
-                                data["include_audio"] = 'True'
-                            else:
-                                files_payload["document"] = (attachment.filename, file_data, content_type)
+                    for i, attachment in enumerate(message.attachments):
+                        # Download the attachment
+                        async with session.get(attachment.url) as resp:
+                            if resp.status == 200:
+                                file_data = await resp.read()
+                                
+                                # Determine file type based on content type or filename
+                                content_type = attachment.content_type or 'application/octet-stream'
+                                filename = attachment.filename.lower()
+                                
+                                if content_type.startswith('image/') or filename.endswith(('.jpg', '.jpeg', '.png', '.gif', '.webp')):
+                                    # For multiple images, use indexed keys or append to list
+                                    if "images" not in files_payload:
+                                        files_payload["images"] = []
+                                    files_payload["images"].append((attachment.filename, file_data, content_type))
+                                elif (filename.endswith(('.ogg', '.mp3', '.wav', '.m4a', '.aac', '.flac')) or 
+                                      content_type.startswith('audio/')):
+                                    files_payload["voice"] = (attachment.filename, file_data, content_type)
+                                    is_voice_message = True
+                                    # For voice messages, request audio response
+                                    data["include_audio"] = 'True'
+                                else:
+                                    files_payload["document"] = (attachment.filename, file_data, content_type)
             
             # Make request to Cortana API
             chat_url = f"{cortana_api_url}/chat"
@@ -170,8 +173,15 @@ class Client(commands.Bot):
                 form_data.add_field(key, value)
             
             # Add file fields if any
-            for key, (filename, file_data, content_type) in files_payload.items():
-                form_data.add_field(key, file_data, filename=filename, content_type=content_type)
+            for key, value in files_payload.items():
+                if key == "images" and isinstance(value, list):
+                    # Handle multiple images
+                    for filename, file_data, content_type in value:
+                        form_data.add_field("images", file_data, filename=filename, content_type=content_type)
+                else:
+                    # Handle single files (voice, document, etc.)
+                    filename, file_data, content_type = value
+                    form_data.add_field(key, file_data, filename=filename, content_type=content_type)
             
             async with aiohttp.ClientSession() as session:
                 async with session.post(chat_url, data=form_data) as resp:
