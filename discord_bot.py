@@ -183,8 +183,13 @@ class Client(commands.Bot):
                     filename, file_data, content_type = value
                     form_data.add_field(key, file_data, filename=filename, content_type=content_type)
             
+            # Prepare headers with bearer token
+            headers = {}
+            if keys['hf_token']:
+                headers['Authorization'] = f'Bearer {keys["hf_token"]}'
+            
             async with aiohttp.ClientSession() as session:
-                async with session.post(chat_url, data=form_data) as resp:
+                async with session.post(chat_url, data=form_data, headers=headers) as resp:
                     if resp.status == 200:
                         response_data = await resp.json()
                         cortana_response = response_data.get('response', 'Sorry, I could not process your request.')
@@ -304,8 +309,13 @@ async def reset_cortana(interaction: discord.Interaction):
         # Make request to reset endpoint
         reset_url = f"{cortana_api_url}/reset"
         
+        # Prepare headers with bearer token
+        headers = {}
+        if keys['hf_token']:
+            headers['Authorization'] = f'Bearer {keys["hf_token"]}'
+        
         async with aiohttp.ClientSession() as session:
-            async with session.post(reset_url) as resp:
+            async with session.post(reset_url, headers=headers) as resp:
                 if resp.status == 200:
                     await interaction.response.send_message(f'{interaction.user.mention}, Cortana\'s memory has been reset successfully.')
                 else:
