@@ -155,6 +155,48 @@ class Client(commands.Bot):
                                     files_payload["images"].append((attachment.filename, file_data, content_type))
                                 elif (filename.endswith(('.ogg', '.mp3', '.wav', '.m4a', '.aac', '.flac')) or 
                                       content_type.startswith('audio/')):
+                                    # Convert .ogg files to .wav
+                                    if filename.endswith('.ogg'):
+                                        try:
+                                            # Create temporary files for conversion
+                                            with tempfile.NamedTemporaryFile(suffix='.ogg', delete=False) as temp_ogg:
+                                                temp_ogg.write(file_data)
+                                                temp_ogg_path = temp_ogg.name
+                                            
+                                            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_wav:
+                                                temp_wav_path = temp_wav.name
+                                            
+                                            # Convert using FFmpeg
+                                            result = subprocess.run([
+                                                'ffmpeg', '-i', temp_ogg_path, 
+                                                '-ar', '16000',  # 16kHz sample rate
+                                                '-ac', '1',      # mono channel
+                                                '-y',            # overwrite output file
+                                                temp_wav_path
+                                            ], capture_output=True, check=True)
+                                            
+                                            # Read the converted file
+                                            with open(temp_wav_path, 'rb') as f:
+                                                file_data = f.read()
+                                            
+                                            # Update filename and content type
+                                            attachment.filename = attachment.filename.replace('.ogg', '.wav')
+                                            content_type = 'audio/wav'
+                                            
+                                            # Clean up temporary files
+                                            os.unlink(temp_ogg_path)
+                                            os.unlink(temp_wav_path)
+                                            
+                                            print(f"✅ Converted {attachment.filename} from .ogg to .wav")
+                                            
+                                        except subprocess.CalledProcessError as e:
+                                            print(f"❌ Failed to convert .ogg to .wav: {e}")
+                                            print(f"FFmpeg stderr: {e.stderr.decode() if e.stderr else 'No stderr'}")
+                                            # Use original file if conversion fails
+                                        except Exception as e:
+                                            print(f"❌ Error during .ogg conversion: {e}")
+                                            # Use original file if conversion fails
+                                    
                                     files_payload["voice"] = (attachment.filename, file_data, content_type)
                                     is_voice_message = True
                                     # For voice messages, request audio response
