@@ -119,6 +119,7 @@ class Client(commands.Bot):
             # Prepare the data payload (like gradio example)
             data = {
                 "query": message.content,
+                "user": 'Tristan Padiou',
                 "google_api_key": keys['google_api_key'],
                 "tavily_key": keys['tavily_key'],
                 "include_audio": 'False'  # Set to 'true' if you want audio responses
