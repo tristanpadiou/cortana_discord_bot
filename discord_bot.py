@@ -51,7 +51,9 @@ load_dotenv()
 # Setup FFmpeg
 setup_ffmpeg()
 
-GUILD_ID = discord.Object(id=os.getenv('server_id'))
+# Support both DISCORD_SERVER_ID and server_id for backwards compatibility
+server_id = os.getenv('DISCORD_SERVER_ID') or os.getenv('server_id')
+GUILD_ID = discord.Object(id=server_id) if server_id else None
 cortana_api_url = 'https://wolf1997-cortana-api.hf.space'
 # cortana_api_url = 'http://localhost:8000'
 keys = {
@@ -373,4 +375,9 @@ http_thread.start()
 
 # Start the Discord bot
 print("🤖 Starting Cortana Discord Bot...")
-client.run(os.getenv('bot_token'))
+# Support both DISCORD_TOKEN and bot_token for backwards compatibility
+discord_token = os.getenv('DISCORD_TOKEN') or os.getenv('bot_token')
+if not discord_token:
+    print("❌ Error: DISCORD_TOKEN or bot_token environment variable not set!")
+    exit(1)
+client.run(discord_token)
