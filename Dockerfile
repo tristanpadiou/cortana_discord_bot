@@ -8,23 +8,27 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Install system dependencies including FFmpeg
+# Install system dependencies including FFmpeg and uv
 RUN apt-get update && apt-get install -y \
     gcc \
     ffmpeg \
     libffi-dev \
     libssl-dev \
+    curl \
     && rm -rf /var/lib/apt/lists/*
+
+# Install uv
+RUN pip install --no-cache-dir uv
 
 # Verify FFmpeg installation
 RUN ffmpeg -version
 
-# Copy requirements file
-COPY requirements.txt .
+# Copy project configuration files
+COPY pyproject.toml .
+COPY uv.lock* .
 
-# Install Python dependencies
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+# Create virtual environment and install dependencies
+RUN uv sync --frozen
 
 # Copy application files
 COPY discord_bot.py .
@@ -42,5 +46,5 @@ EXPOSE 7860
 # HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 #     CMD python -c "import sys; sys.exit(0)"
 
-# Command to run the application
-CMD ["python", "discord_bot.py"] 
+# Command to run the application using uv
+CMD ["uv", "run", "discord_bot.py"] 
