@@ -28,6 +28,62 @@ pip install -r requirements.txt
    - Select "Send Messages" permission
    - Copy and visit the generated URL to invite the bot
 
+## Docker Setup (Alternative)
+
+You can also run the Discord bot using Docker, which provides a consistent environment and easier deployment.
+
+### Prerequisites
+
+- Docker installed on your system
+- Discord bot token (follow steps 2-4 from the Setup section above)
+
+### Building and Running with Docker
+
+1. Build the Docker image:
+```bash
+docker build -t cortana-discord-bot .
+```
+
+2. Run the container with your Discord token:
+```bash
+docker run -e DISCORD_TOKEN=your_bot_token_here cortana-discord-bot
+```
+
+3. For production deployment, you can also run in detached mode:
+```bash
+docker run -d --name cortana-bot -e DISCORD_TOKEN=your_bot_token_here cortana-discord-bot
+```
+
+### Using Docker Compose (Recommended)
+
+Create a `docker-compose.yml` file:
+```yaml
+version: '3.8'
+services:
+  cortana-bot:
+    build: .
+    environment:
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+    restart: unless-stopped
+```
+
+Then create a `.env` file with your token:
+```
+DISCORD_TOKEN=your_bot_token_here
+```
+
+Run with Docker Compose:
+```bash
+docker-compose up -d
+```
+
+### Docker Commands
+
+- **View logs**: `docker logs cortana-bot`
+- **Stop the bot**: `docker stop cortana-bot`
+- **Remove container**: `docker rm cortana-bot`
+- **Rebuild and restart**: `docker-compose up -d --build`
+
 ## Usage
 
 ### Basic Message Sending
