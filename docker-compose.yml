@@ -1,0 +1,33 @@
+services:
+  cortana-discord-bot:
+    image: ghcr.io/tristanpadiou/cortana_discord_bot:latest
+    container_name: cortana-discord-bot
+    pull_policy: always
+    ports:
+      - "7860:7860"
+    volumes:
+      # Persist logs and data
+      - ./logs:/app/logs:rw
+      - ./data:/app/data:rw
+
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7860/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - cortana-network
+
+networks:
+  cortana-network:
+    driver: bridge
+
+volumes:
+  cortana-discord-bot-logs:
+  cortana-discord-bot-data:
