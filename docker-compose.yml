@@ -13,9 +13,37 @@ services:
       - .env
     environment:
       - PYTHONUNBUFFERED=1
+      - CORTANA_API_URL=http://cortana-api:8000
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:7860/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - cortana-network
+    depends_on:
+      - cortana-api
+
+  cortana-api:
+    image: ghcr.io/tristanpadiou/cortana_api:latest
+    container_name: cortana-api
+    pull_policy: always
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persist logs and data
+      - ./logs:/home/user/app/logs
+      - ./data:/home/user/app/data
+      - ./config.yaml:/home/user/app/config.yaml:ro
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3

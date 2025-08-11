@@ -55,7 +55,7 @@ setup_ffmpeg()
 server_id = os.getenv('DISCORD_SERVER_ID') or os.getenv('server_id')
 GUILD_ID = discord.Object(id=server_id) if server_id else None
 # cortana_api_url = 'https://wolf1997-cortana-api.hf.space'
-cortana_api_url = 'http://0.0.0.0:8000'
+cortana_api_url = os.getenv('CORTANA_API_URL', 'http://cortana-api:8000')
 keys = {
         "google_api_key": os.getenv("google_api_key", ""),
         "tavily_key": os.getenv("tavily_key", ""),
