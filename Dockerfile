@@ -40,7 +40,7 @@ RUN useradd --create-home --shell /bin/bash app && \
 USER app
 
 # Expose port for Hugging Face spaces (typically 7860)
-EXPOSE 7860
+# EXPOSE 7860
 
 # Health check - disabled for Discord bot as it doesn't expose HTTP endpoints
 # HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \

@@ -3,8 +3,7 @@ services:
     image: ghcr.io/tristanpadiou/cortana_discord_bot:latest
     container_name: cortana-discord-bot
     pull_policy: always
-    ports:
-      - "7860:7860"
+
     volumes:
       # Persist logs and data
       - ./logs:/app/logs:rw
