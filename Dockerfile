@@ -32,7 +32,7 @@ RUN uv sync --frozen
 
 # Copy application files
 COPY discord_bot.py .
-COPY config_example.py .
+
 
 # Create a non-root user to run the application
 RUN useradd --create-home --shell /bin/bash app && \
