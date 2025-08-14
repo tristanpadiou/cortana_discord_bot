@@ -2,7 +2,7 @@ name: Build and Deploy to Raspberry Pi
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ deploy ]
   workflow_dispatch:
 
 env:
@@ -67,7 +67,7 @@ jobs:
         
         # Pull latest changes (for docker-compose.yml updates)
         echo "Pulling latest repository changes..."
-        git pull origin main || git pull origin master
+        git pull origin deploy
         
         # Login to GitHub Container Registry
         echo "Logging into container registry..."

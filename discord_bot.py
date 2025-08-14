@@ -118,11 +118,11 @@ class Client(commands.Bot):
             return
             
         try:
-            # Prepare the data payload for new bearer token API
+            # Prepare the data payload for bearer token API
             data = {
                 "query": message.content,
                 "user": str(message.author),  # Use Discord username
-                "include_audio": 'False'  # Set to 'true' if you want audio responses
+                "include_audio": False  # Boolean instead of string
             }
             
             # Prepare files for upload (separate from data, like gradio)
@@ -195,7 +195,7 @@ class Client(commands.Bot):
                                     files_payload["voice"] = (attachment.filename, file_data, content_type)
                                     is_voice_message = True
                                     # For voice messages, request audio response
-                                    data["include_audio"] = 'True'
+                                    data["include_audio"] = True
                                 else:
                                     files_payload["document"] = (attachment.filename, file_data, content_type)
             
