@@ -56,14 +56,14 @@ server_id = os.getenv('DISCORD_SERVER_ID') or os.getenv('server_id')
 GUILD_ID = discord.Object(id=server_id) if server_id else None
 # cortana_api_url = 'https://wolf1997-cortana-api.hf.space'
 cortana_api_url = os.getenv('CORTANA_API_URL', 'http://cortana-api:8000')
-keys = {
-        "google_api_key": os.getenv("google_api_key", ""),
-        "tavily_key": os.getenv("tavily_key", ""),
-        "pse": os.getenv("pse", ""),
-        "openai_api_key": os.getenv("openai_api_key", ""),
-        "composio_key": os.getenv("composio_api_key", ""),
-        "hf_token": os.getenv("hf_token", "")
-    }
+
+# Bearer token for Cortana API authentication
+bearer_token = os.getenv('BEARER_TOKEN')
+
+if not bearer_token:
+    print("❌ Error: BEARER_TOKEN environment variable not set!")
+    print("Please set your Cortana API bearer token in the environment variables.")
+    exit(1)
 
 
 class Client(commands.Bot):
@@ -118,20 +118,12 @@ class Client(commands.Bot):
             return
             
         try:
-            # Prepare the data payload (like gradio example)
+            # Prepare the data payload for new bearer token API
             data = {
                 "query": message.content,
-                "user": 'Tristan Padiou',
-                "google_api_key": keys['google_api_key'],
-                "tavily_key": keys['tavily_key'],
+                "user": str(message.author),  # Use Discord username
                 "include_audio": 'False'  # Set to 'true' if you want audio responses
             }
-            
-            # Add optional API keys if provided
-            optional_keys = ["pse", "openai_api_key", "composio_key", "hf_token"]
-            for key in optional_keys:
-                if keys[key]:
-                    data[key] = keys[key]
             
             # Prepare files for upload (separate from data, like gradio)
             files_payload = {}
@@ -228,10 +220,10 @@ class Client(commands.Bot):
                     filename, file_data, content_type = value
                     form_data.add_field(key, file_data, filename=filename, content_type=content_type)
             
-            # Prepare headers with bearer token
-            headers = {}
-            if keys['hf_token']:
-                headers['Authorization'] = f'Bearer {keys["hf_token"]}'
+            # Prepare headers with bearer token for Cortana API
+            headers = {
+                'Authorization': f'Bearer {os.getenv("BEARER_TOKEN")}'
+            }
             
             async with aiohttp.ClientSession() as session:
                 async with session.post(chat_url, data=form_data, headers=headers) as resp:
@@ -354,10 +346,10 @@ async def reset_cortana(interaction: discord.Interaction):
         # Make request to reset endpoint
         reset_url = f"{cortana_api_url}/reset"
         
-        # Prepare headers with bearer token
-        headers = {}
-        if keys['hf_token']:
-            headers['Authorization'] = f'Bearer {keys["hf_token"]}'
+        # Prepare headers with bearer token for Cortana API
+        headers = {
+            'Authorization': f'Bearer {os.getenv("BEARER_TOKEN")}'
+        }
         
         async with aiohttp.ClientSession() as session:
             async with session.post(reset_url, headers=headers) as resp:
