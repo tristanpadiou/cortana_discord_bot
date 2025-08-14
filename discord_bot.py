@@ -222,7 +222,7 @@ class Client(commands.Bot):
             
             # Prepare headers with bearer token for Cortana API
             headers = {
-                'Authorization': f'Bearer {bearer_token}'
+                'Authorization': f'Bearer {os.getenv("BEARER_TOKEN")}'
             }
             
             async with aiohttp.ClientSession() as session:
@@ -348,7 +348,7 @@ async def reset_cortana(interaction: discord.Interaction):
         
         # Prepare headers with bearer token for Cortana API
         headers = {
-            'Authorization': f'Bearer {bearer_token}'
+            'Authorization': f'Bearer {os.getenv("BEARER_TOKEN")}'
         }
         
         async with aiohttp.ClientSession() as session:
