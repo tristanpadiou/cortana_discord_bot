@@ -1,8 +1,7 @@
 services:
   cortana-discord-bot:
-    image: ghcr.io/tristanpadiou/cortana_discord_bot:latest
+    build: .
     container_name: cortana-discord-bot
-    pull_policy: always
     networks:
       - cortana-network
 
