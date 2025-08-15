@@ -33,18 +33,14 @@ RUN uv sync --frozen
 # Copy application files
 COPY discord_bot.py .
 
+# Create startup script to ensure .env file exists
+RUN echo '#!/bin/bash\n\
+if [ ! -f .env ]; then\n\
+    echo "Creating empty .env file..."\n\
+    touch .env\n\
+fi\n\
+exec uv run discord_bot.py' > /app/start.sh && \
+    chmod +x /app/start.sh
 
-# Create a non-root user to run the application
-RUN useradd --create-home --shell /bin/bash app && \
-    chown -R app:app /app
-USER app
-
-# Expose port for Hugging Face spaces (typically 7860)
-# EXPOSE 7860
-
-# Health check - disabled for Discord bot as it doesn't expose HTTP endpoints
-# HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-#     CMD python -c "import sys; sys.exit(0)"
-
-# Command to run the application using uv
-CMD ["uv", "run", "discord_bot.py"] 
+# Command to run the application using startup script
+CMD ["/app/start.sh"] 

@@ -11,6 +11,25 @@ from discord import app_commands
 import aiohttp
 import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
+import time
+
+# Load environment variables from .env file FIRST
+load_dotenv()
+
+bearer_token = os.getenv('BEARER_TOKEN')
+if not bearer_token:
+    #scan for changes in .env file
+    while True:
+        load_dotenv()  # Reload .env file
+        bearer_token = os.getenv('BEARER_TOKEN')
+        if bearer_token:
+            print(f"✅ BEARER_TOKEN environment variable set")
+            break
+        else:
+            print("❌ Error: BEARER_TOKEN environment variable not set!")
+            print("Please set your Cortana API bearer token in the environment variables.")
+        time.sleep(1)
+
 
 def setup_ffmpeg():
     """Ensure FFmpeg is available"""
@@ -45,9 +64,6 @@ def setup_ffmpeg():
         
         return False
 
-# Load environment variables from .env file
-load_dotenv()
-
 # Setup FFmpeg
 setup_ffmpeg()
 
@@ -56,14 +72,9 @@ server_id = os.getenv('DISCORD_SERVER_ID') or os.getenv('server_id')
 GUILD_ID = discord.Object(id=server_id) if server_id else None
 # cortana_api_url = 'https://wolf1997-cortana-api.hf.space'
 cortana_api_url = os.getenv('CORTANA_API_URL', 'http://cortana-api:8000')
+# cortana_api_url = os.getenv('CORTANA_API_URL', 'http://localhost:8000')
 
 # Bearer token for Cortana API authentication
-bearer_token = os.getenv('BEARER_TOKEN')
-
-if not bearer_token:
-    print("❌ Error: BEARER_TOKEN environment variable not set!")
-    print("Please set your Cortana API bearer token in the environment variables.")
-    exit(1)
 
 
 class Client(commands.Bot):
@@ -121,7 +132,7 @@ class Client(commands.Bot):
             # Prepare the data payload for bearer token API
             data = {
                 "query": message.content,
-                "user": str(message.author),  # Use Discord username
+                "user": "Tristan Padiou",  # Use Discord username
                 "include_audio": False  # Boolean instead of string
             }
             
@@ -207,7 +218,11 @@ class Client(commands.Bot):
             
             # Add regular data fields
             for key, value in data.items():
-                form_data.add_field(key, value)
+                # Convert boolean values to strings for FormData serialization
+                if isinstance(value, bool):
+                    form_data.add_field(key, str(value).lower())
+                else:
+                    form_data.add_field(key, str(value))
             
             # Add file fields if any
             for key, value in files_payload.items():
