@@ -2,14 +2,11 @@ import discord
 import os
 from dotenv import load_dotenv
 import asyncio
-import io
 import tempfile
 import subprocess
 import platform
 from discord.ext import commands
-from discord import app_commands
 import aiohttp
-import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import time
 
@@ -307,57 +304,90 @@ def start_http_server():
 @client.tree.command(name='join_voice', description='Join your voice channel', guild=GUILD_ID)
 async def join_voice(interaction: discord.Interaction):
     try:
+        # Defer the response immediately to prevent interaction timeout
+        await interaction.response.defer()
+        
         if interaction.user.voice:
             channel = interaction.user.voice.channel
             if interaction.guild.voice_client:
                 await interaction.guild.voice_client.move_to(channel)
             else:
                 await channel.connect()
-            await interaction.response.send_message(f'Joined {channel.name}!')
+            await interaction.followup.send(f'✅ Joined {channel.name}!')
         else:
-            await interaction.response.send_message('You need to be in a voice channel first!')
+            await interaction.followup.send('❌ You need to be in a voice channel first!')
     except Exception as e:
         print(f"Error joining voice: {e}")
-        await interaction.response.send_message(f'Error joining voice channel: {str(e)}')
+        try:
+            await interaction.followup.send(f'❌ Error joining voice channel: {str(e)}')
+        except:
+            # If followup also fails, try to send a new message
+            try:
+                await interaction.channel.send(f'❌ Error joining voice channel: {str(e)}')
+            except:
+                print(f"Could not send error message: {e}")
 
 @client.tree.command(name='leave_voice', description='Leave the voice channel', guild=GUILD_ID)
 async def leave_voice(interaction: discord.Interaction):
     try:
+        # Defer the response immediately to prevent interaction timeout
+        await interaction.response.defer()
+        
         if interaction.guild.voice_client:
             await interaction.guild.voice_client.disconnect()
-            await interaction.response.send_message('Left the voice channel!')
+            await interaction.followup.send('✅ Left the voice channel!')
         else:
-            await interaction.response.send_message('Not connected to a voice channel!')
+            await interaction.followup.send('❌ Not connected to a voice channel!')
     except Exception as e:
         print(f"Error leaving voice: {e}")
-        await interaction.response.send_message(f'Error leaving voice channel: {str(e)}')
+        try:
+            await interaction.followup.send(f'❌ Error leaving voice channel: {str(e)}')
+        except:
+            # If followup also fails, try to send a new message
+            try:
+                await interaction.channel.send(f'❌ Error leaving voice channel: {str(e)}')
+            except:
+                print(f"Could not send error message: {e}")
 
 @client.tree.command(name='start_listening', description='Start listening for voice commands (push-to-talk alternative)', guild=GUILD_ID)
 async def start_listening(interaction: discord.Interaction):
     try:
+        # Defer the response immediately to prevent interaction timeout
+        await interaction.response.defer()
+        
         voice_client = interaction.guild.voice_client
         if not voice_client:
-            await interaction.response.send_message('Bot is not connected to a voice channel! Use /join_voice first.')
+            await interaction.followup.send('❌ Bot is not connected to a voice channel! Use /join_voice first.')
             return
         
         if client.recording:
-            await interaction.response.send_message('Already listening for voice commands!')
+            await interaction.followup.send('⚠️ Already listening for voice commands!')
             return
         
-        await interaction.response.send_message('🎤 **Voice Command Mode Active!**\n\n'
-                                              '**Instructions:**\n'
-                                              '1. Record your voice message using Discord\'s voice recording feature\n'
-                                              '2. Send the audio file as an attachment in this chat\n'
-                                              '3. I\'ll process it and respond with both text and audio!\n\n'
-                                              '**Alternative:** Upload any audio file (.mp3, .wav, .ogg) and I\'ll process it.')
+        await interaction.followup.send('🎤 **Voice Command Mode Active!**\n\n'
+                                       '**Instructions:**\n'
+                                       '1. Record your voice message using Discord\'s voice recording feature\n'
+                                       '2. Send the audio file as an attachment in this chat\n'
+                                       '3. I\'ll process it and respond with both text and audio!\n\n'
+                                       '**Alternative:** Upload any audio file (.mp3, .wav, .ogg) and I\'ll process it.')
         
     except Exception as e:
         print(f"Error in start_listening: {e}")
-        await interaction.response.send_message(f'Error starting voice listening: {str(e)}')
+        try:
+            await interaction.followup.send(f'❌ Error starting voice listening: {str(e)}')
+        except:
+            # If followup also fails, try to send a new message
+            try:
+                await interaction.channel.send(f'❌ Error starting voice listening: {str(e)}')
+            except:
+                print(f"Could not send error message: {e}")
 
 @client.tree.command(name='reset_cortana', description='Reset the conversation', guild=GUILD_ID)
 async def reset_cortana(interaction: discord.Interaction):
     try:
+        # Defer the response immediately to prevent interaction timeout
+        await interaction.response.defer()
+        
         # Make request to reset endpoint
         reset_url = f"{cortana_api_url}/reset"
         
@@ -369,12 +399,19 @@ async def reset_cortana(interaction: discord.Interaction):
         async with aiohttp.ClientSession() as session:
             async with session.post(reset_url, headers=headers) as resp:
                 if resp.status == 200:
-                    await interaction.response.send_message(f'{interaction.user.mention}, Cortana\'s memory has been reset successfully.')
+                    await interaction.followup.send(f'{interaction.user.mention}, ✅ Cortana\'s memory has been reset successfully.')
                 else:
-                    await interaction.response.send_message(f'{interaction.user.mention}, Failed to reset Cortana\'s memory.')
+                    await interaction.followup.send(f'{interaction.user.mention}, ❌ Failed to reset Cortana\'s memory.')
     except Exception as e:
         print(f"Error in reset_cortana: {e}")
-        await interaction.response.send_message(f'{interaction.user.mention}, Error resetting Cortana: {str(e)}')
+        try:
+            await interaction.followup.send(f'{interaction.user.mention}, ❌ Error resetting Cortana: {str(e)}')
+        except:
+            # If followup also fails, try to send a new message
+            try:
+                await interaction.channel.send(f'{interaction.user.mention}, ❌ Error resetting Cortana: {str(e)}')
+            except:
+                print(f"Could not send error message: {e}")
 
 # Start HTTP server in a separate thread for Hugging Face spaces
 # http_thread = threading.Thread(target=start_http_server, daemon=True)
