@@ -13,13 +13,17 @@ import time
 # Load environment variables from .env file FIRST
 load_dotenv()
 
-bearer_token = os.getenv('BEARER_TOKEN')
-if not bearer_token:
+BEARER_TOKEN = os.getenv('BEARER_TOKEN')
+DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
+DISCORD_SERVER_ID = os.getenv('DISCORD_SERVER_ID')
+CORTANA_API_URL = os.getenv('CORTANA_API_URL')
+BOT_TOKEN = os.getenv('BOT_TOKEN')
+if not BEARER_TOKEN:
     #scan for changes in .env file
     while True:
         load_dotenv()  # Reload .env file
-        bearer_token = os.getenv('BEARER_TOKEN')
-        if bearer_token:
+        BEARER_TOKEN = os.getenv('BEARER_TOKEN')
+        if BEARER_TOKEN:
             print(f"✅ BEARER_TOKEN environment variable set")
             break
         else:
@@ -65,10 +69,9 @@ def setup_ffmpeg():
 setup_ffmpeg()
 
 # Support both DISCORD_SERVER_ID and server_id for backwards compatibility
-server_id = os.getenv('DISCORD_SERVER_ID') or os.getenv('server_id')
-GUILD_ID = discord.Object(id=server_id) if server_id else None
+GUILD_ID = discord.Object(id=DISCORD_SERVER_ID) if DISCORD_SERVER_ID else None
 # cortana_api_url = 'https://wolf1997-cortana-api.hf.space'
-cortana_api_url = os.getenv('CORTANA_API_URL', 'http://cortana-api:8000')
+cortana_api_url = CORTANA_API_URL
 # cortana_api_url = os.getenv('CORTANA_API_URL', 'http://localhost:8000')
 
 # Bearer token for Cortana API authentication
@@ -208,7 +211,7 @@ class Client(commands.Bot):
                                     files_payload["document"] = (attachment.filename, file_data, content_type)
             
             # Make request to Cortana API
-            chat_url = f"{cortana_api_url}/chat"
+            chat_url = f"{CORTANA_API_URL}/chat"
             
             # Create FormData for aiohttp (equivalent to requests.post with data and files)
             form_data = aiohttp.FormData()
@@ -234,7 +237,7 @@ class Client(commands.Bot):
             
             # Prepare headers with bearer token for Cortana API
             headers = {
-                'Authorization': f'Bearer {os.getenv("BEARER_TOKEN")}'
+                'Authorization': f'Bearer {BEARER_TOKEN}'
             }
             
             async with aiohttp.ClientSession() as session:
@@ -389,11 +392,11 @@ async def reset_cortana(interaction: discord.Interaction):
         await interaction.response.defer()
         
         # Make request to reset endpoint
-        reset_url = f"{cortana_api_url}/reset"
+        reset_url = f"{CORTANA_API_URL}/reset"
         
         # Prepare headers with bearer token for Cortana API
         headers = {
-            'Authorization': f'Bearer {os.getenv("BEARER_TOKEN")}'
+            'Authorization': f'Bearer {BEARER_TOKEN}'
         }
         
         async with aiohttp.ClientSession() as session:
@@ -420,8 +423,7 @@ async def reset_cortana(interaction: discord.Interaction):
 # Start the Discord bot
 print("🤖 Starting Cortana Discord Bot...")
 # Support both DISCORD_TOKEN and bot_token for backwards compatibility
-discord_token = os.getenv('DISCORD_TOKEN') or os.getenv('bot_token')
-if not discord_token:
-    print("❌ Error: DISCORD_TOKEN or bot_token environment variable not set!")
+if not BOT_TOKEN:
+    print("❌ Error: BOT_TOKEN environment variable not set!")
     exit(1)
-client.run(discord_token)
+client.run(BOT_TOKEN)

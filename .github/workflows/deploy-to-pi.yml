@@ -55,6 +55,7 @@ jobs:
   deploy:
     needs: build-and-push
     runs-on: self-hosted
+    environment: production  # This enables environment secrets and can require approval
     
     steps:
     - name: Checkout code
@@ -73,6 +74,36 @@ jobs:
         echo "Logging into container registry..."
         echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
         
+        # Validate required secrets
+        echo "🔍 Validating required secrets..."
+        if [ -z "${{ secrets.DISCORD_TOKEN }}" ]; then
+          echo "❌ Error: DISCORD_TOKEN secret is not set!"
+          exit 1
+        fi
+        
+        if [ -z "${{ secrets.BOT_TOKEN }}" ]; then
+          echo "❌ Error: BOT_TOKEN secret is not set!"
+          exit 1
+        fi
+        
+        if [ -z "${{ secrets.DISCORD_SERVER_ID }}" ]; then
+          echo "❌ Error: DISCORD_SERVER_ID secret is not set!"
+          exit 1
+        fi
+        
+        if [ -z "${{ secrets.BEARER_TOKEN }}" ]; then
+          echo "❌ Error: BEARER_TOKEN secret is not set!"
+          exit 1
+        fi
+        
+        echo "✅ All required secrets are set"
+        echo "📋 Environment variables to be used:"
+        echo "   - DISCORD_TOKEN: [SET]"
+        echo "   - BOT_TOKEN: [SET]"
+        echo "   - DISCORD_SERVER_ID: [SET]" 
+        echo "   - BEARER_TOKEN: [SET]"
+        echo "   - CORTANA_API_URL: http://cortana-api:8000"
+        
         # Stop existing containers
         echo "Stopping existing containers..."
         docker compose down || true
@@ -81,8 +112,13 @@ jobs:
         echo "Pulling latest Docker image..."
         docker compose pull
         
-        # Start the application
-        echo "Starting application..."
+        # Start the application with environment variables
+        echo "Starting application with environment variables..."
+        DISCORD_TOKEN="${{ secrets.DISCORD_TOKEN }}" \
+        BOT_TOKEN="${{ secrets.BOT_TOKEN }}" \
+        DISCORD_SERVER_ID="${{ secrets.DISCORD_SERVER_ID }}" \
+        BEARER_TOKEN="${{ secrets.BEARER_TOKEN }}" \
+        CORTANA_API_URL="http://cortana-api:8000" \
         docker compose up -d
         
         # Clean up old images
@@ -91,10 +127,17 @@ jobs:
         
         # Check if the service is running
         sleep 15
-        if docker compose ps | grep -q "Up"; then
-          echo "✅ Deployment successful! Application is running."
-          echo "🌐 Application available at: http://localhost:8000"
+        echo "🔍 Checking service status..."
+        if docker compose ps | grep -q "cortana-discord-bot.*Up"; then
+          echo "✅ Deployment successful! Cortana Discord Bot is running."
+          echo "🤖 Bot is online and ready to respond to commands."
+          echo "📊 Service status:"
+          docker compose ps
         else
-          echo "❌ Deployment failed. Check logs with: docker compose logs"
+          echo "❌ Deployment failed. Cortana Discord Bot is not running."
+          echo "📋 Container status:"
+          docker compose ps
+          echo "📄 Recent logs:"
+          docker compose logs --tail=20
           exit 1
         fi
