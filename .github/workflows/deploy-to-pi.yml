@@ -55,7 +55,7 @@ jobs:
   deploy:
     needs: build-and-push
     runs-on: self-hosted
-    environment: production  # This enables environment secrets and can require approval
+    environment: env  # Using your environment name
     
     steps:
     - name: Checkout code
