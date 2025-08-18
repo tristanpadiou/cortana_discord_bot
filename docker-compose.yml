@@ -15,9 +15,8 @@ services:
       - PYTHONUNBUFFERED=1
       - CORTANA_API_URL=http://cortana-api:8000
       # These will be overridden by environment variables passed from GitHub Actions
-      - DISCORD_TOKEN=${DISCORD_TOKEN}
       - BOT_TOKEN=${BOT_TOKEN}
-      - DISCORD_SERVER_ID=${DISCORD_SERVER_ID}
+      - SERVER_ID=${SERVER_ID}
       - BEARER_TOKEN=${BEARER_TOKEN}
     restart: unless-stopped
     healthcheck:

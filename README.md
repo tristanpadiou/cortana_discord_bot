@@ -17,10 +17,10 @@ pip install -r requirements.txt
 
 3. Configure the bot:
    - Create a `.env` file in the root directory
-   - Add your Discord bot token:
+   - Add your Discord bot token and server ID:
    ```
-   DISCORD_TOKEN=your_bot_token_here
    BOT_TOKEN=your_bot_token_here
+   SERVER_ID=your_server_id_here
    ```
 
 4. Invite the bot to your server:
@@ -47,12 +47,12 @@ docker build -t cortana-discord-bot .
 
 2. Run the container with your Discord token:
 ```bash
-docker run -e DISCORD_TOKEN=your_bot_token_here -e BOT_TOKEN=your_bot_token_here cortana-discord-bot
+docker run -e BOT_TOKEN=your_bot_token_here -e SERVER_ID=your_server_id_here cortana-discord-bot
 ```
 
 3. For production deployment, you can also run in detached mode:
 ```bash
-docker run -d --name cortana-bot -e DISCORD_TOKEN=your_bot_token_here -e BOT_TOKEN=your_bot_token_here cortana-discord-bot
+docker run -d --name cortana-bot -e BOT_TOKEN=your_bot_token_here -e SERVER_ID=your_server_id_here cortana-discord-bot
 ```
 
 ### Using Docker Compose (Recommended)
@@ -64,15 +64,15 @@ services:
   cortana-bot:
     build: .
     environment:
-      - DISCORD_TOKEN=${DISCORD_TOKEN}
       - BOT_TOKEN=${BOT_TOKEN}
+      - SERVER_ID=${SERVER_ID}
     restart: unless-stopped
 ```
 
 Then create a `.env` file with your token:
 ```
-DISCORD_TOKEN=your_bot_token_here
 BOT_TOKEN=your_bot_token_here
+SERVER_ID=your_server_id_here
 ```
 
 Run with Docker Compose:
@@ -103,12 +103,11 @@ This project includes a GitHub Actions workflow for automated deployment to a Ra
 
 Before deploying, you must configure the following secrets in your GitHub repository:
 
-1. **DISCORD_TOKEN**: Your Discord bot token
-2. **BOT_TOKEN**: Your Discord bot token (alternative name)
-3. **DISCORD_SERVER_ID**: Your Discord server ID  
-4. **BEARER_TOKEN**: Your Cortana API bearer token
+1. **BOT_TOKEN**: Your Discord bot token
+2. **SERVER_ID**: Your Discord server ID  
+3. **BEARER_TOKEN**: Your Cortana API bearer token
 
-**Note**: Both `DISCORD_TOKEN` and `BOT_TOKEN` should be set to the same value for backwards compatibility.
+**Note**: The bot uses `BOT_TOKEN` for authentication and `SERVER_ID` for server-specific operations.
 
 **Recommended**: Use **Environment Secrets** instead of Repository Secrets for better security. See [ENVIRONMENT_SECRETS_SETUP.md](ENVIRONMENT_SECRETS_SETUP.md) for detailed setup instructions.
 

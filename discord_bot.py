@@ -14,8 +14,8 @@ import time
 load_dotenv()
 
 BEARER_TOKEN = os.getenv('BEARER_TOKEN')
-DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
-DISCORD_SERVER_ID = os.getenv('DISCORD_SERVER_ID')
+# DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
+DISCORD_SERVER_ID = os.getenv('SERVER_ID')
 CORTANA_API_URL = os.getenv('CORTANA_API_URL')
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 if not BEARER_TOKEN:

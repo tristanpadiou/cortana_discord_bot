@@ -76,18 +76,13 @@ jobs:
         
         # Validate required secrets
         echo "🔍 Validating required secrets..."
-        if [ -z "${{ secrets.DISCORD_TOKEN }}" ]; then
-          echo "❌ Error: DISCORD_TOKEN secret is not set!"
-          exit 1
-        fi
-        
         if [ -z "${{ secrets.BOT_TOKEN }}" ]; then
           echo "❌ Error: BOT_TOKEN secret is not set!"
           exit 1
         fi
         
-        if [ -z "${{ secrets.DISCORD_SERVER_ID }}" ]; then
-          echo "❌ Error: DISCORD_SERVER_ID secret is not set!"
+        if [ -z "${{ secrets.SERVER_ID }}" ]; then
+          echo "❌ Error: SERVER_ID secret is not set!"
           exit 1
         fi
         
@@ -98,9 +93,8 @@ jobs:
         
         echo "✅ All required secrets are set"
         echo "📋 Environment variables to be used:"
-        echo "   - DISCORD_TOKEN: [SET]"
         echo "   - BOT_TOKEN: [SET]"
-        echo "   - DISCORD_SERVER_ID: [SET]" 
+        echo "   - SERVER_ID: [SET]" 
         echo "   - BEARER_TOKEN: [SET]"
         echo "   - CORTANA_API_URL: http://cortana-api:8000"
         
@@ -114,9 +108,8 @@ jobs:
         
         # Start the application with environment variables
         echo "Starting application with environment variables..."
-        DISCORD_TOKEN="${{ secrets.DISCORD_TOKEN }}" \
         BOT_TOKEN="${{ secrets.BOT_TOKEN }}" \
-        DISCORD_SERVER_ID="${{ secrets.DISCORD_SERVER_ID }}" \
+        SERVER_ID="${{ secrets.SERVER_ID }}" \
         BEARER_TOKEN="${{ secrets.BEARER_TOKEN }}" \
         CORTANA_API_URL="http://cortana-api:8000" \
         docker compose up -d
